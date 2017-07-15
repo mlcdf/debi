@@ -7,11 +7,12 @@ import os
 
 import click
 import requests
+import logsymbols
 
 
 class Config:
     """Store the configuration"""
-    DOWNLOAD_DIR = os.path.expanduser("~") + '/.cache/debi/'
+    DOWNLOAD_DIR = os.path.expanduser('~') + '/.cache/debi/'
 
 
 class Package:
@@ -42,9 +43,9 @@ class Package:
                            self.repo + '/releases')
 
         if res.status_code != 200:
-            raise Exception(
-                str(res.status_code) + ' ' + res.json()['message'] + ': ' +
-                self.owner + '/' + self.repo)
+            raise Exception(logsymbols.error + ' ' +
+                            str(res.status_code) + ' ' + res.json()['message'] + ': ' +
+                            self.owner + '/' + self.repo)
 
         releases = res.json()
 
@@ -66,12 +67,14 @@ class Package:
                     (self.thirtytwo is True and '64' not in assets['name'])):
                 return assets['browser_download_url']
 
+        raise Exception(
+            logsymbols.error + ' This repository does not provide a Debian package.')
+
     def fetch(self):
         """Fetch the .deb file from GitHub."""
         download_url = self.resolve_download_url()
-        print(download_url)
 
-        print('Fetching ' + self.repo + ' ' + self.version)
+        print('Fetching ' + download_url)
         res = requests.get(download_url, stream=True)
 
         # Check if download dir exist
@@ -93,7 +96,7 @@ class Package:
             shell=True)
         (output, err) = process.communicate()
         process.wait()
-        print('Successfully installed!')
+        print(logsymbols.success + ' Successfully installed!')
 
 
 @click.command()

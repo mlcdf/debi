@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "287407417f9a9c1ba995d84f9b7d80ee03e772fcabcfeb3a1be19fad4e378715"
+            "sha256": "4a680846f1fffba817fe0ad518fc3a06041052d8ce0c3cc8aff9a44a054fa2a7"
         },
         "requires": {},
         "sources": [
@@ -23,6 +23,9 @@
         },
         "idna": {
             "version": "==2.5"
+        },
+        "logsymbols": {
+            "version": "==0.1.0"
         },
         "requests": {
             "version": "==2.18.1"
