@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='debi',
-    version='0.1.0.dev1',
+    version='0.1.0.dev2',
     author='Maxime Le Conte des Floris',
     author_email='hello@mlcdf.com',
     description=

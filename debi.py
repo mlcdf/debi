@@ -23,13 +23,15 @@ class Package:
     version = ''
     beta = False  ## by default, we assume you want to download the none-beta version of the package
     file_path = ''
+    thirtytwo = ''
 
-    def __init__(self, name, owner, repo, beta):
+    def __init__(self, name, owner, repo, beta, thirtytwo):
         self.name = name
         self.owner = owner
         self.repo = repo
         self.beta = beta
         self.file_name = name.lower().replace(' ', '_')
+        self.thirtytwo = thirtytwo
 
     def resolve_download_url(self):
         """Resolve the download url"""
@@ -48,24 +50,26 @@ class Package:
 
         for release in releases:
             tag = release['tag_name']
+            latest_release = release
 
             if 'beta' in tag:
                 if self.beta is True:
-                    latest_release = release
                     break
             else:
-                latest_release = release
                 break
 
         self.version = latest_release['tag_name']
 
         for assets in latest_release['assets']:
-            if '.deb' in assets['name']:
+            if '.deb' in assets['name'] and (
+                (self.thirtytwo is False and '64' in assets['name']) or
+                (self.thirtytwo is True and '64' not in assets['name'])):
                 return assets['browser_download_url']
 
     def fetch(self):
         """Fetch the .deb file from GitHub."""
         download_url = self.resolve_download_url()
+        print(download_url)
 
         print('Fetching ' + self.repo + ' ' + self.version)
         res = requests.get(download_url, stream=True)
@@ -99,9 +103,14 @@ class Package:
     default=False,
     is_flag=True,
     help="Install the beta version of the package")
-def cli(owner, repo, beta):
+@click.option(
+    '--thirtytwo',
+    default=False,
+    is_flag=True,
+    help="Install the 32-bits version (instead of the 64-bits)")
+def cli(owner, repo, beta, thirtytwo):
     """Installing Debian packages via GitHub releases."""
-    pkg = Package('Atom', owner, repo, beta)
+    pkg = Package('Atom', owner, repo, beta, thirtytwo)
     try:
         pkg.fetch()
         pkg.install()
