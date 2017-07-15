@@ -17,13 +17,13 @@ class Config:
 class Package:
     """Represents a package"""
 
-    name = ''  ## package name
-    owner = ''  ## GitHub repo name
-    repo = ''  ## GitHub owner name
+    name = ''  #  package name
+    owner = ''  #  GitHub repo name
+    repo = ''  # GitHub owner name
     version = ''
-    beta = False  ## by default, we assume you want to download the none-beta version of the package
     file_path = ''
-    thirtytwo = ''
+    beta = False
+    thirtytwo = False
 
     def __init__(self, name, owner, repo, beta, thirtytwo):
         self.name = name
@@ -62,8 +62,8 @@ class Package:
 
         for assets in latest_release['assets']:
             if '.deb' in assets['name'] and (
-                (self.thirtytwo is False and '64' in assets['name']) or
-                (self.thirtytwo is True and '64' not in assets['name'])):
+                    (self.thirtytwo is False and '64' in assets['name']) or
+                    (self.thirtytwo is True and '64' not in assets['name'])):
                 return assets['browser_download_url']
 
     def fetch(self):
@@ -78,7 +78,8 @@ class Package:
         if os.path.exists(Config.DOWNLOAD_DIR) is False:
             os.makedirs(Config.DOWNLOAD_DIR)
 
-        self.file_path = Config.DOWNLOAD_DIR + self.file_name + '-' + self.version + '.deb'
+        self.file_path = Config.DOWNLOAD_DIR + \
+            self.file_name + '-' + self.version + '.deb'
 
         with open(self.file_path, 'wb') as file:
             shutil.copyfileobj(res.raw, file)
@@ -100,12 +101,12 @@ class Package:
 @click.argument('repo')
 @click.option(
     '--beta',
-    default=False,
+    default=False,  #  by default, we assume you want to install the none-beta version
     is_flag=True,
     help="Install the beta version of the package")
 @click.option(
     '--thirtytwo',
-    default=False,
+    default=False,  #  by default, we assume you want to install 64-bits version
     is_flag=True,
     help="Install the 32-bits version (instead of the 64-bits)")
 def cli(owner, repo, beta, thirtytwo):
