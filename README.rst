@@ -1,5 +1,19 @@
 debi: Debian Package Installer (via GitHub releases)
-===================================================
+====================================================
+
+.. image:: https://img.shields.io/pypi/v/debi.svg
+    :target: https://pypi.python.org/pypi/debi
+
+.. image:: https://img.shields.io/pypi/l/debi.svg
+    :target: https://pypi.python.org/pypi/debi
+
+.. image:: https://img.shields.io/pypi/wheel/debi.svg
+    :target: https://pypi.python.org/pypi/debi
+
+.. image:: https://img.shields.io/pypi/pyversions/debi.svg
+    :target: https://pypi.python.org/pypi/debi
+
+---------------
 
 A command-line interface for installing Debian packages via GitHub releases.
 
@@ -54,7 +68,7 @@ By default, ``debi`` will look for the 64-bits version (based on the name of the
 
 
 License
------
+-------
 
 MIT
 
