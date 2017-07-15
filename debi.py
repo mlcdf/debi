@@ -11,7 +11,7 @@ import requests
 
 class Config:
     """Store the configuration"""
-    DOWNLOAD_DIR = os.path.expanduser("~") + '/.cache/dpi/'
+    DOWNLOAD_DIR = os.path.expanduser("~") + '/.cache/debi/'
 
 
 class Package:

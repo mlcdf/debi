@@ -1,4 +1,4 @@
-dpi: Debian Package Installer (via GitHub releases)
+debi: Debian Package Installer (via GitHub releases)
 ===================================================
 
 A command-line interface for installing Debian packages via GitHub releases.
@@ -8,7 +8,7 @@ Install
 
 ::
 
-    $ pip install dpi
+    $ pip install debi
 
 
 Usage
@@ -16,8 +16,8 @@ Usage
 
 ::
 
-    $ dpi --help
-    Usage: dpi [OPTIONS] OWNER REPO
+    $ debi --help
+    Usage: debi [OPTIONS] OWNER REPO
 
       Installing Debian packages via GitHub releases.
 
@@ -27,7 +27,7 @@ Usage
 
 ::
 
-    $ dpi atom atom
+    $ debi atom atom
     Finding the latest release for atom/atom
     Fetching atom v1.18.0
     Installing atom v1.18.0
@@ -35,7 +35,7 @@ Usage
 
 ::
 
-    $ dpi atom atom --beta
+    $ debi atom atom --beta
     Finding the latest release for atom/atom
     Fetching atom v1.19.0-beta4
     Installing atom v1.19.0-beta4
