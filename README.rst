@@ -13,7 +13,9 @@ Debi
 .. image:: https://img.shields.io/pypi/pyversions/debi.svg
     :target: https://pypi.python.org/pypi/debi
 
-**Debi** provides an quick and easy way to install Debian packages via GitHub releases.
+----------------------------------------------------------
+
+**Debi** provides a quick and easy way to install Debian packages via GitHub releases.
 
 Here's some popular programs you can install using **Debi**:
 
