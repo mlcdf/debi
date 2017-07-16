@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """debi: Installing Debian packages via GitHub releases."""
 
 import shutil
@@ -56,9 +55,9 @@ def resolve_latest_release(pkg):
                        pkg.repo + '/releases')
 
     if res.status_code != 200:
-        raise Exception(logsymbols.error + ' ' +
-                        str(res.status_code) + ' ' + res.json()['message'] + ': ' +
-                        pkg.owner + '/' + pkg.repo)
+        raise Exception(logsymbols.error + ' ' + str(res.status_code) + ' ' +
+                        res.json()['message'] + ': ' + pkg.owner + '/' +
+                        pkg.repo)
 
     releases = res.json()
 
@@ -74,17 +73,19 @@ def resolve_latest_release(pkg):
 
     for assets in latest_release['assets']:
         if '.deb' in assets['name'] and (
-                (pkg.arch == '64' and '64' in assets['name']) or
+            (pkg.arch == '64' and '64' in assets['name']) or
                 (pkg.arch == '32' and '64' not in assets['name'])):
-            return Release(pkg, latest_release['tag_name'], assets['browser_download_url'], assets['size'])
+            return Release(pkg, latest_release['tag_name'],
+                           assets['browser_download_url'], assets['size'])
 
-    raise Exception(
-        logsymbols.error + ' This repository does not provide a Debian package.')
+    raise Exception(logsymbols.error +
+                    ' This repository does not provide a Debian package.')
 
 
 def is_in_cache(release):
     """Check if the given release has already been cached."""
-    return os.path.isfile(release.local_path) and os.path.getsize(release.local_path) == release.size
+    return os.path.isfile(release.local_path) and os.path.getsize(
+        release.local_path) == release.size
 
 
 def fetch(release):
@@ -114,12 +115,12 @@ def install(release):
 @click.argument('repo')
 @click.option(
     '--beta',
-    default=False,  #  by default, we assume you want to install the none-beta version
+    default=False,
     is_flag=True,
     help="Install the beta version of the package")
 @click.option(
     '--thirtytwo',
-    default=False,  #  by default, we assume you want to install 64-bits version
+    default=False,
     is_flag=True,
     help="Install the 32-bits version (instead of the 64-bits)")
 def cli(owner, repo, beta, thirtytwo):
@@ -128,8 +129,8 @@ def cli(owner, repo, beta, thirtytwo):
     arch = '32' if thirtytwo else '64'
     pkg = Package(owner, repo, beta, arch)
     try:
-        click.echo('Finding the latest release for ' +
-                   pkg.owner + '/' + pkg.repo)
+        click.echo('Finding the latest release for ' + pkg.owner + '/' +
+                   pkg.repo)
         release = resolve_latest_release(pkg)
 
         if is_in_cache(release):
@@ -138,8 +139,8 @@ def cli(owner, repo, beta, thirtytwo):
             click.echo('Fetching ' + release.download_url)
             fetch(release)
 
-        click.echo('Installing ' + release.package.repo +
-                   ' ' + release.version)
+        click.echo('Installing ' + release.package.repo + ' ' +
+                   release.version)
         install(release)
         click.echo(logsymbols.success + ' Successfully installed!')
         exit(0)

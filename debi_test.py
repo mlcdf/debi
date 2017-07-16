@@ -2,7 +2,6 @@ import delegator
 
 
 class TestDebi:
-
     def test_package_64bits(self):
         assert delegator.run('debi atom atom').return_code == 0
 

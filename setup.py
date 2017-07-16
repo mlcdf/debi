@@ -8,7 +8,7 @@ setup(
     version='0.1.0.dev3',
     author='Maxime Le Conte des Floris',
     author_email='hello@mlcdf.com',
-    description='A command-line interface for installing Debian packages via GitHub releases',
+    description='Command-line interface for installing Debian packages via GitHub releases',
     py_modules=['debi'],
     install_requires=['Click', 'requests'],
     python_requires='>=3',
