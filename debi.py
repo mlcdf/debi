@@ -118,5 +118,7 @@ def cli(owner, repo, beta, thirtytwo):
     try:
         pkg.fetch()
         pkg.install()
+        exit(0)
     except Exception as message:
         print(message)
+        exit(1)
