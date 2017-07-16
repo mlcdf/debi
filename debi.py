@@ -19,84 +19,94 @@ class Config:
 
 class Package:
     """Represents a package"""
-
     owner = ''  #  GitHub repo name
     repo = ''  # GitHub owner name
-    version = ''
-    file_path = ''
     beta = False
-    thirtytwo = False
+    arch = ''
 
-    def __init__(self, owner, repo, beta, thirtytwo):
+    def __init__(self, owner, repo, beta, arch):
         self.owner = owner
         self.repo = repo
         self.beta = beta
-        self.file_name = owner.lower().replace(' ', '_')
-        self.thirtytwo = thirtytwo
+        self.arch = arch
 
-    def resolve_download_url(self):
-        """Resolve the download url"""
-        print('Finding the latest release for ' + self.owner + '/' + self.repo)
-        latest_release = None
 
-        res = requests.get('https://api.github.com/repos/' + self.owner + '/' +
-                           self.repo + '/releases')
+class Release:
+    """Represents a release"""
+    package = None
+    version = ''
+    download_url = ''
+    local_path = ''
+    size = 0
 
-        if res.status_code != 200:
-            raise Exception(logsymbols.error + ' ' +
-                            str(res.status_code) + ' ' + res.json()['message'] + ': ' +
-                            self.owner + '/' + self.repo)
+    def __init__(self, package, version, download_url, size):
+        self.package = package
+        self.version = version
+        self.download_url = download_url
+        self.local_path = Config.DOWNLOAD_DIR + package.repo.lower().replace(' ', '-') + \
+            '-' + version + '.deb'
+        self.size = size
 
-        releases = res.json()
 
-        for release in releases:
-            tag = release['tag_name']
-            latest_release = release
+def resolve_latest_release(pkg):
+    """Resolve the latest release"""
+    latest_release = None
 
-            if 'beta' in tag:
-                if self.beta is True:
-                    break
-            else:
+    res = requests.get('https://api.github.com/repos/' + pkg.owner + '/' +
+                       pkg.repo + '/releases')
+
+    if res.status_code != 200:
+        raise Exception(logsymbols.error + ' ' +
+                        str(res.status_code) + ' ' + res.json()['message'] + ': ' +
+                        pkg.owner + '/' + pkg.repo)
+
+    releases = res.json()
+
+    for release in releases:
+        tag = release['tag_name']
+        latest_release = release
+
+        if 'beta' in tag:
+            if pkg.beta is True:
                 break
+        else:
+            break
 
-        self.version = latest_release['tag_name']
+    for assets in latest_release['assets']:
+        if '.deb' in assets['name'] and (
+                (pkg.arch == '64' and '64' in assets['name']) or
+                (pkg.arch == '32' and '64' not in assets['name'])):
+            return Release(pkg, latest_release['tag_name'], assets['browser_download_url'], assets['size'])
 
-        for assets in latest_release['assets']:
-            if '.deb' in assets['name'] and (
-                    (self.thirtytwo is False and '64' in assets['name']) or
-                    (self.thirtytwo is True and '64' not in assets['name'])):
-                return assets['browser_download_url']
+    raise Exception(
+        logsymbols.error + ' This repository does not provide a Debian package.')
 
-        raise Exception(
-            logsymbols.error + ' This repository does not provide a Debian package.')
 
-    def fetch(self):
-        """Fetch the .deb file from GitHub."""
-        download_url = self.resolve_download_url()
+def is_in_cache(release):
+    """Check if the given release has already been cached."""
+    return os.path.isfile(release.local_path) and os.path.getsize(release.local_path) == release.size
 
-        print('Fetching ' + download_url)
-        res = requests.get(download_url, stream=True)
 
-        # Check if download dir exist
-        if os.path.exists(Config.DOWNLOAD_DIR) is False:
-            os.makedirs(Config.DOWNLOAD_DIR)
+def fetch(release):
+    """Fetch the .deb file from GitHub."""
+    res = requests.get(release.download_url, stream=True)
 
-        self.file_path = Config.DOWNLOAD_DIR + \
-            self.file_name + '-' + self.version + '.deb'
+    # Check if download dir exist
+    if os.path.exists(Config.DOWNLOAD_DIR) is False:
+        os.makedirs(Config.DOWNLOAD_DIR)
 
-        with open(self.file_path, 'wb') as file:
-            shutil.copyfileobj(res.raw, file)
+    with open(release.local_path, 'wb') as file:
+        shutil.copyfileobj(res.raw, file)
 
-    def install(self):
-        """Install the package."""
-        print('Installing ' + self.repo + ' ' + self.version)
-        process = subprocess.Popen(
-            'sudo dpkg -i ' + self.file_path,
-            stdout=subprocess.PIPE,
-            shell=True)
-        (output, err) = process.communicate()
-        process.wait()
-        print(logsymbols.success + ' Successfully installed!')
+
+def install(release):
+    """Install the package."""
+    process = subprocess.Popen(
+        'sudo dpkg -i ' + release.local_path,
+        stdout=subprocess.PIPE,
+        shell=True)
+    (output, err) = process.communicate()
+    process.wait()
 
 
 @click.command()
@@ -114,10 +124,24 @@ class Package:
     help="Install the 32-bits version (instead of the 64-bits)")
 def cli(owner, repo, beta, thirtytwo):
     """Installing Debian packages via GitHub releases."""
-    pkg = Package(owner, repo, beta, thirtytwo)
+
+    arch = '32' if thirtytwo else '64'
+    pkg = Package(owner, repo, beta, arch)
     try:
-        pkg.fetch()
-        pkg.install()
+        click.echo('Finding the latest release for ' +
+                   pkg.owner + '/' + pkg.repo)
+        release = resolve_latest_release(pkg)
+
+        if is_in_cache(release):
+            click.echo('Fetching from cache')
+        else:
+            click.echo('Fetching ' + release.download_url)
+            fetch(release)
+
+        click.echo('Installing ' + release.package.repo +
+                   ' ' + release.version)
+        install(release)
+        click.echo(logsymbols.success + ' Successfully installed!')
         exit(0)
     except Exception as message:
         print(message)
