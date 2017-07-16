@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='debi',
-    version='0.1.0.dev2',
+    version='0.1.0.dev3',
     author='Maxime Le Conte des Floris',
     author_email='hello@mlcdf.com',
     description='A command-line interface for installing Debian packages via GitHub releases',
