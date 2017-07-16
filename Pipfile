@@ -6,3 +6,5 @@ verify_ssl = true
 requests = "*"
 click = "*"
 logsymbols = "*"
+pytest = "*"
+"delegator.py" = "*"
