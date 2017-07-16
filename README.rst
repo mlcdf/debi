@@ -1,4 +1,4 @@
-debi: Debian Package Installer (via GitHub releases)
+Debi
 ====================================================
 
 .. image:: https://img.shields.io/pypi/v/debi.svg
@@ -13,9 +13,15 @@ debi: Debian Package Installer (via GitHub releases)
 .. image:: https://img.shields.io/pypi/pyversions/debi.svg
     :target: https://pypi.python.org/pypi/debi
 
----------------
+**Debi** provides an quick and easy way to install Debian packages via GitHub releases.
 
-A command-line interface for installing Debian packages via GitHub releases.
+Here's some popular programs you can install using **Debi**:
+
+- Atom
+- Brave
+- Keeweb
+- Webtorrent Desktop
+- ...
 
 Install
 -------
@@ -52,11 +58,11 @@ Usage
 
     $ debi atom atom --beta
     Finding the latest release for atom/atom
-    https://github.com/atom/atom/releases/download/v1.19.0-beta4/atom-amd64.deb
+    Fetching https://github.com/atom/atom/releases/download/v1.19.0-beta4/atom-amd64.deb
     Installing atom v1.19.0-beta4
     ✔ Successfully installed!
 
-By default, ``debi`` will look for the 64-bits version (based on the name of the release). If you want to install the 32-bits version instead, add the flag ``--thirtytwo``.
+By default, **Debi** will look for the 64-bits version (based on the name of the release). If you want to install the 32-bits version instead, add the flag ``--thirtytwo``.
 
 ::
 
