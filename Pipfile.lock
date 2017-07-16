@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8725e33b33a5c4c750e7f99cd62d22147809ac87c5dc44a95d4f43556c71907c"
+            "sha256": "e64e204683d5fabeea98ab7d7f383a4040f445c85d1dc4f4452e6dbf0452d2d1"
         },
         "requires": {},
         "sources": [
@@ -21,14 +21,22 @@
         "click": {
             "version": "==6.7"
         },
-        "delegator.py": {
-            "version": "==0.0.12"
-        },
         "idna": {
             "version": "==2.5"
         },
         "logsymbols": {
             "version": "==0.1.0"
+        },
+        "requests": {
+            "version": "==2.18.1"
+        },
+        "urllib3": {
+            "version": "==1.21.1"
+        }
+    },
+    "develop": {
+        "delegator.py": {
+            "version": "==0.0.12"
         },
         "pexpect": {
             "version": "==4.2.1"
@@ -42,15 +50,8 @@
         "pytest": {
             "version": "==3.1.3"
         },
-        "requests": {
-            "version": "==2.18.1"
-        },
         "setuptools": {
             "version": "==36.2.0"
-        },
-        "urllib3": {
-            "version": "==1.21.1"
         }
-    },
-    "develop": {}
+    }
 }
