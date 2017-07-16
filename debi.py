@@ -1,5 +1,7 @@
-#!/usr/bin/python3
-"""Installing Debian packages via GitHub releases."""
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""debi: Installing Debian packages via GitHub releases."""
 
 import shutil
 import subprocess
@@ -18,7 +20,6 @@ class Config:
 class Package:
     """Represents a package"""
 
-    name = ''  #  package name
     owner = ''  #  GitHub repo name
     repo = ''  # GitHub owner name
     version = ''
@@ -26,12 +27,11 @@ class Package:
     beta = False
     thirtytwo = False
 
-    def __init__(self, name, owner, repo, beta, thirtytwo):
-        self.name = name
+    def __init__(self, owner, repo, beta, thirtytwo):
         self.owner = owner
         self.repo = repo
         self.beta = beta
-        self.file_name = name.lower().replace(' ', '_')
+        self.file_name = owner.lower().replace(' ', '_')
         self.thirtytwo = thirtytwo
 
     def resolve_download_url(self):
@@ -114,7 +114,7 @@ class Package:
     help="Install the 32-bits version (instead of the 64-bits)")
 def cli(owner, repo, beta, thirtytwo):
     """Installing Debian packages via GitHub releases."""
-    pkg = Package('Atom', owner, repo, beta, thirtytwo)
+    pkg = Package(owner, repo, beta, thirtytwo)
     try:
         pkg.fetch()
         pkg.install()
