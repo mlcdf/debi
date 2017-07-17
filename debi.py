@@ -18,27 +18,69 @@ class Config:
 
 class Package:
     """Represents a package"""
-    owner = ''  #  GitHub repo name
-    repo = ''  # GitHub owner name
-    beta = False
-    arch = ''
 
     def __init__(self, owner, repo, beta, arch):
+        """Initialize a package
+
+        :param owner: GitHub owner name
+        :param repo: GitHub repo name
+        :param beta: beta flag
+        :param arch: architecture, either '32' or '64'
+        """
         self.owner = owner
         self.repo = repo
         self.beta = beta
         self.arch = arch
 
+    def resolve_latest_release(self):
+        """Resolve the latest release
+
+        :return: Release
+        """
+        latest_release = None
+
+        res = requests.get('https://api.github.com/repos/' + self.owner + '/' +
+                           self.repo + '/releases')
+
+        if res.status_code != 200:
+            raise Exception(logsymbols.error + ' ' + str(res.status_code) + ' ' +
+                            res.json()['message'] + ': ' + self.owner + '/' +
+                            self.repo)
+
+        releases = res.json()
+
+        for release in releases:
+            tag = release['tag_name']
+            latest_release = release
+
+            if 'beta' in tag:
+                if self.beta is True:
+                    break
+            else:
+                break
+
+        for assets in latest_release['assets']:
+            if '.deb' in assets['name'] and (
+                (self.arch == '64' and '64' in assets['name']) or
+                    (self.arch == '32' and '64' not in assets['name'])):
+                return Release(self, latest_release['tag_name'],
+                               assets['browser_download_url'], assets['size'])
+
+        raise Exception(logsymbols.error +
+                        ' This repository does not provide a Debian package.')
+
 
 class Release:
     """Represents a release"""
-    package = None
-    version = ''
-    download_url = ''
-    local_path = ''
-    size = 0
 
     def __init__(self, package, version, download_url, size):
+        """Initialize a release
+
+        :param package: package Package
+        :param version: version of the release
+        :param download_url: url to download the release
+        :param size: release size (in bit)
+        """
         self.package = package
         self.version = version
         self.download_url = download_url
@@ -46,68 +88,33 @@ class Release:
             '-' + version + '.deb'
         self.size = size
 
+    def is_in_cache(self):
+        """Check if the release has already been cached.
 
-def resolve_latest_release(pkg):
-    """Resolve the latest release"""
-    latest_release = None
+        :return: True if valid release found it cache
+        """
+        return os.path.isfile(self.local_path) and os.path.getsize(
+            self.local_path) == self.size
 
-    res = requests.get('https://api.github.com/repos/' + pkg.owner + '/' +
-                       pkg.repo + '/releases')
+    def fetch(self):
+        """Fetch the release from GitHub."""
+        res = requests.get(self.download_url, stream=True)
 
-    if res.status_code != 200:
-        raise Exception(logsymbols.error + ' ' + str(res.status_code) + ' ' +
-                        res.json()['message'] + ': ' + pkg.owner + '/' +
-                        pkg.repo)
+        # Check if download dir exist
+        if os.path.exists(Config.DOWNLOAD_DIR) is False:
+            os.makedirs(Config.DOWNLOAD_DIR)
 
-    releases = res.json()
+        with open(self.local_path, 'wb') as file:
+            shutil.copyfileobj(res.raw, file)
 
-    for release in releases:
-        tag = release['tag_name']
-        latest_release = release
-
-        if 'beta' in tag:
-            if pkg.beta is True:
-                break
-        else:
-            break
-
-    for assets in latest_release['assets']:
-        if '.deb' in assets['name'] and (
-            (pkg.arch == '64' and '64' in assets['name']) or
-                (pkg.arch == '32' and '64' not in assets['name'])):
-            return Release(pkg, latest_release['tag_name'],
-                           assets['browser_download_url'], assets['size'])
-
-    raise Exception(logsymbols.error +
-                    ' This repository does not provide a Debian package.')
-
-
-def is_in_cache(release):
-    """Check if the given release has already been cached."""
-    return os.path.isfile(release.local_path) and os.path.getsize(
-        release.local_path) == release.size
-
-
-def fetch(release):
-    """Fetch the .deb file from GitHub."""
-    res = requests.get(release.download_url, stream=True)
-
-    # Check if download dir exist
-    if os.path.exists(Config.DOWNLOAD_DIR) is False:
-        os.makedirs(Config.DOWNLOAD_DIR)
-
-    with open(release.local_path, 'wb') as file:
-        shutil.copyfileobj(res.raw, file)
-
-
-def install(release):
-    """Install the package."""
-    process = subprocess.Popen(
-        'sudo dpkg -i ' + release.local_path,
-        stdout=subprocess.PIPE,
-        shell=True)
-    (output, err) = process.communicate()
-    process.wait()
+    def install(self):
+        """Install the release on the machine."""
+        process = subprocess.Popen(
+            'sudo dpkg -i ' + self.local_path,
+            stdout=subprocess.PIPE,
+            shell=True)
+        (output, err) = process.communicate()
+        process.wait()
 
 
 @click.command()
@@ -129,20 +136,20 @@ def cli(owner, repo, beta, thirtytwo):
     arch = '32' if thirtytwo else '64'
     pkg = Package(owner, repo, beta, arch)
     try:
-        click.echo('Finding the latest release for ' + pkg.owner + '/' +
-                   pkg.repo)
-        release = resolve_latest_release(pkg)
+        print('Finding the latest release for ' + pkg.owner + '/' +
+              pkg.repo)
+        release = pkg.resolve_latest_release()
 
-        if is_in_cache(release):
-            click.echo('Fetching from cache')
+        if release.is_in_cache():
+            print('Fetching from cache')
         else:
-            click.echo('Fetching ' + release.download_url)
-            fetch(release)
+            print('Fetching ' + release.download_url)
+            release.fetch()
 
-        click.echo('Installing ' + release.package.repo + ' ' +
-                   release.version)
-        install(release)
-        click.echo(logsymbols.success + ' Successfully installed!')
+        print('Installing ' + release.package.repo + ' ' +
+              release.version)
+        release.install()
+        print(logsymbols.success + ' Successfully installed!')
         exit(0)
     except Exception as message:
         print(message)
