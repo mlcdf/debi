@@ -141,7 +141,7 @@ def cli(owner, repo, beta, thirtytwo):
         release = pkg.resolve_latest_release()
 
         if release.is_in_cache():
-            print('Fetching from cache')
+            print('Retrieving from cache')
         else:
             print('Fetching ' + release.download_url)
             release.fetch()
